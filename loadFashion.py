@@ -8,8 +8,6 @@ cr_conn = sql.connect(crDbasePath)
 main_c = main_conn.cursor()
 cr_c = cr_conn.cursor()
 
-
-
 rows = main_c.execute('SELECT id,link,webSiteId,categoryName FROM links WHERE isChecked=0')
 for row in rows.fetchall():
     id = row[0]

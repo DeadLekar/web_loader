@@ -42,16 +42,16 @@ class WebSite:
         :return: cards from a single web page loaded in self.driver
         """
 
-        while 1:
-            # get cards from the page
-            page = self.driver.execute_script('return document.body.innerHTML')
-            soup = BeautifulSoup(''.join(page), 'html.parser')
-            for data_set in self.cards_html_classes:
-                items = soup.find_all(data_set['type'], data_set['class_name'])
-                if items: break
-            if not items:
-                print('Unable to find cards on {}'.format(self.driver.current_url))
-                break
+        # get cards from the page
+        items = None
+        page = self.driver.execute_script('return document.body.innerHTML')
+        soup = BeautifulSoup(''.join(page), 'html.parser')
+        for data_set in self.cards_html_classes:
+            items = soup.find_all(data_set['type'], data_set['class_name'])
+            if items: break
+        if not items:
+            print('Unable to find cards on {}'.format(self.driver.current_url))
+        else:
             for item in items:
                 self.cards.append(self.Card.get_data(item, self.driver.current_url))
 
@@ -119,7 +119,8 @@ class WebSite:
         else:
             print('No cards for {}'.format(self.site_id))
         print('Loading next page...')
-        self.load_next_page()
+        if self.load_next_page(): print('Success')
+        self.driver.close()
 
     def _get_xpath(self, el):
         """
@@ -128,7 +129,7 @@ class WebSite:
         """
         xpath_arr = []
         parent = el.getparent()
-        while parent:
+        while parent is not None:
             cnt_children = 0 # count of children with the same name
             el_num = 1 # element's number among the same children
             suffix = ''
