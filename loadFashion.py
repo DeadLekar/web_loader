@@ -1,17 +1,7 @@
 from fashionSites import *
 import sqlite3 as sql
+from paths import *
 
-compName = "work"
-driverPath = ""
-mainDbasePath = crDbasePath = ""
-if compName == "work":
-    driverPath = r"C:\Program Files (x86)\Google\Chrome\Application\chromedriver.exe"
-    mainDbasePath = r"\\METSYS\analysts\Marketing\DataBase\fashion.db"
-    crDbasePath = r"\\METSYS\analysts\Marketing\DataBase\fashion_2018_05.db"
-elif compName == "notebook":
-    driverPath = r"C:\Users\vkovalenko\Dropbox\Ilya-Papa\father_files\drivers\chromedriver.exe"
-    mainDbasePath = r"\\METSYS\analysts\Marketing\DataBase\fashion.db"
-    crDbasePath = r"\\METSYS\analysts\Marketing\DataBase\fashion_2018_05.db"
 
 main_conn = sql.connect(mainDbasePath)
 cr_conn = sql.connect(crDbasePath)
