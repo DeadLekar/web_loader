@@ -153,9 +153,10 @@ class WebSite:
         return '/'.join(xpath_arr)
 
 class Card:
-    def __init__(self, site_id, cat):
+    def __init__(self, site_id, cat, cat_id):
         self.webSiteID= site_id
         self.categoryName = cat
+        self.categoryNameId = cat_id
 
     def get_data(self, soup, url):
         pass

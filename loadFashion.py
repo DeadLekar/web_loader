@@ -8,6 +8,7 @@ cr_conn = sql.connect(crDbasePath)
 main_c = main_conn.cursor()
 cr_c = cr_conn.cursor()
 
+main_c.execute('UPDATE links SET isChecked=0')
 rows = main_c.execute('SELECT id,link,webSiteId,categoryName FROM links WHERE isChecked=0')
 driver = webdriver.Chrome(driverPath)
 for row in rows.fetchall():
@@ -21,26 +22,25 @@ for row in rows.fetchall():
     next_page_html = ''
     next_page_text = ''
     if web_site_id == 1:
-        card = Wildberries(web_site_id, category_name)
+        card = Wildberries(web_site_id, category_name, id)
         cards_html_classes = [{'class_name': 'dtList', 'type': 'div'}]
         next_page_html = 'next'
     elif web_site_id == 2:
-        card = Lamoda(web_site_id, category_name)
+        card = Lamoda(web_site_id, category_name, id)
         cards_html_classes = [{'class_name': 'products-list-item', 'type': 'div'}]
         next_page_html = 'paginator__next'
     elif web_site_id == 3:
-        card = Kupivip(web_site_id, category_name)
+        card = Kupivip(web_site_id, category_name, id)
         cards_html_classes = [{'class_name': 'product-item', 'type': 'div'}]
         next_page_html = 'icon-arrow right'
     elif web_site_id == 4:
-        card = Bonprix(web_site_id, category_name)
+        card = Bonprix(web_site_id, category_name, id)
         cards_html_classes = [{'class_name': 'product-list-item ', 'type': 'div'}]
         next_page_html = 'next'
     elif web_site_id == 5:
-        card = Quelle(web_site_id, category_name)
+        card = Quelle(web_site_id, category_name, id)
         cards_html_classes = [{'class_name': 'q-product-box', 'type': 'li'}]
         next_page_html = 'pagination-next'
-
 
     # get data
     web_site = WebSite(link, driver, web_site_id, category_name, card, cards_html_classes, next_page_html, cr_conn)
