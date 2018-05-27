@@ -44,9 +44,9 @@ for row in rows.fetchall():
 
     # get data
     web_site = WebSite(link, driver, web_site_id, category_name, card, cards_html_classes, next_page_html, cr_conn)
-    web_site.make_test()
-    # web_site.get_all_cards()
-    # web_site.save_cards()
+    # web_site.make_test()
+    web_site.get_all_cards()
+    web_site.save_cards()
 driver.close()
 print('Creating a pivot table')
 cr_c.execute("CREATE TABLE `pivot` ( `webSiteID` INTEGER, `categoryName` TEXT, `cntItems` INTEGER )")

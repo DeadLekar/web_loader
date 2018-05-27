@@ -34,7 +34,7 @@ class WebSite:
         :return: cards from all pages starting from self.url
         """
         self.get_cards_single()
-        while not self.load_next_page():
+        while self.load_next_page():
             self.get_cards_single()
 
     def get_cards_single(self):
@@ -56,6 +56,7 @@ class WebSite:
                 self.cards.append(self.Card.get_data(item, self.driver.current_url))
 
     def load_next_page(self):
+        time.sleep(1)
         txt = self.driver.execute_script('return document.body.innerHTML')
         page = html.document_fromstring(txt)
         el = page.find_class(self.next_page_class)
