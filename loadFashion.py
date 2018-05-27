@@ -9,6 +9,7 @@ main_c = main_conn.cursor()
 cr_c = cr_conn.cursor()
 
 rows = main_c.execute('SELECT id,link,webSiteId,categoryName FROM links WHERE isChecked=0')
+driver = webdriver.Chrome(driverPath)
 for row in rows.fetchall():
     id = row[0]
     link = row[1]
@@ -42,11 +43,11 @@ for row in rows.fetchall():
 
 
     # get data
-    web_site = WebSite(link, driverPath, web_site_id, category_name, card, cards_html_classes, next_page_html, cr_conn)
+    web_site = WebSite(link, driver, web_site_id, category_name, card, cards_html_classes, next_page_html, cr_conn)
     web_site.make_test()
     # web_site.get_all_cards()
     # web_site.save_cards()
-
+driver.close()
 print('Creating a pivot table')
 cr_c.execute("CREATE TABLE `pivot` ( `webSiteID` INTEGER, `categoryName` TEXT, `cntItems` INTEGER )")
 cr_conn.commit()

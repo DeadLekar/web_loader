@@ -16,8 +16,8 @@ class WebSite:
     cards_html_classes = []
     next_page_xpath = ''
 
-    def __init__(self, url, driverPath, site_id, cat, card, cards_html_classes, next_page_class, cr_conn):
-        self.driver = webdriver.Chrome(driverPath)
+    def __init__(self, url, driver, site_id, cat, card, cards_html_classes, next_page_class, cr_conn):
+        self.driver = driver
         self.driver.maximize_window()
         self.driver.get(url)
         self.site_id = site_id
@@ -120,7 +120,6 @@ class WebSite:
             print('No cards for {}'.format(self.site_id))
         print('Loading next page...')
         if self.load_next_page(): print('Success')
-        self.driver.close()
 
     def _get_xpath(self, el):
         """
