@@ -153,9 +153,10 @@ class WebSite:
         xpath_arr.reverse()
         return '/'.join(xpath_arr)
 
+
 class Card:
     def __init__(self, site_id, cat, cat_id):
-        self.webSiteID= site_id
+        self.webSiteID = site_id
         self.categoryName = cat
         self.categoryNameId = cat_id
 
@@ -198,6 +199,7 @@ class Wildberries(Card):
     def get_data(self, soup, url):
         # brand
         data_dict = {}
+
         html_classes = [{'class_name':'brand-name','type':'strong'}]
         brandName = sf.clear_string(self._get_field_value(soup, html_classes,'brand', url),sf.rus_letters+sf.lat_letters+sf.digits+sf.puncts+' ')
         if brandName: data_dict['brandName'] = brandName
@@ -235,6 +237,7 @@ class Wildberries(Card):
         data_dict['loadDate'] = time.strftime('%d.%m.%Y', time.localtime())
         data_dict['webSiteID'] = self.webSiteID
         data_dict['categoryName'] = self.categoryName
+        data_dict['categoryNameID'] = self.categoryNameId
         return data_dict
 
 
@@ -278,6 +281,7 @@ class Lamoda(Card):
         data_dict['loadDate'] = time.strftime('%d.%m.%Y', time.localtime())
         data_dict['webSiteID'] = self.webSiteID
         data_dict['categoryName'] = self.categoryName
+        data_dict['categoryNameID'] = self.categoryNameId
         return data_dict
 
 
@@ -317,6 +321,7 @@ class Kupivip(Card):
         data_dict['loadDate'] = time.strftime('%d.%m.%Y', time.localtime())
         data_dict['webSiteID'] = self.webSiteID
         data_dict['categoryName'] = self.categoryName
+        data_dict['categoryNameID'] = self.categoryNameId
         return data_dict
 
 
@@ -349,6 +354,7 @@ class Bonprix(Card):
         data_dict['loadDate'] = time.strftime('%d.%m.%Y', time.localtime())
         data_dict['webSiteID'] = self.webSiteID
         data_dict['categoryName'] = self.categoryName
+        data_dict['categoryNameID'] = self.categoryNameId
         return data_dict
 
 
@@ -391,4 +397,5 @@ class Quelle(Card):
         data_dict['loadDate'] = time.strftime('%d.%m.%Y', time.localtime())
         data_dict['webSiteID'] = self.webSiteID
         data_dict['categoryName'] = self.categoryName
+        data_dict['categoryNameID'] = self.categoryNameId
         return data_dict
