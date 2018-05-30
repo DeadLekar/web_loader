@@ -9,10 +9,10 @@ main_c = main_conn.cursor()
 cr_c = cr_conn.cursor()
 
 # main_c.execute('UPDATE links SET isChecked=0')
-rows = main_c.execute('SELECT id,link,webSiteId,categoryName FROM links WHERE isChecked=0')
+rows = main_c.execute('SELECT id,link,webSiteId,categoryName FROM links WHERE websiteid=5')
 driver = webdriver.Chrome(driverPath)
 for row in rows.fetchall():
-    id = row[0]
+    link_id = row[0]
     link = row[1]
     web_site_id = row[2]
     category_name = row[3]
@@ -22,32 +22,25 @@ for row in rows.fetchall():
     next_page_html = ''
     next_page_text = ''
     if web_site_id == 1:
-        card = Wildberries(web_site_id, category_name, id)
-        cards_html_classes = [{'class_name': 'dtList', 'type': 'div'}]
-        next_page_html = 'next'
+        card = Wildberries(web_site_id, category_name, link_id)
+        web_site = WebSite_Wildberries(link, driver, category_name, card, cr_conn)
     elif web_site_id == 2:
-        card = Lamoda(web_site_id, category_name, id)
-        cards_html_classes = [{'class_name': 'products-list-item', 'type': 'div'}]
-        next_page_html = 'paginator__next'
+        card = Lamoda(web_site_id, category_name, link_id)
+        web_site = WebSite_Lamoda(link, driver, category_name, card, cr_conn)
     elif web_site_id == 3:
-        card = Kupivip(web_site_id, category_name, id)
-        cards_html_classes = [{'class_name': 'product-item', 'type': 'div'}]
-        next_page_html = 'icon-arrow right'
+        card = Kupivip(web_site_id, category_name, link_id)
+        web_site = WebSite_Kupivip(link, driver, category_name, card, cr_conn)
     elif web_site_id == 4:
-        card = Bonprix(web_site_id, category_name, id)
-        cards_html_classes = [{'class_name': 'product-list-item ', 'type': 'div'}]
-        next_page_html = 'next'
+        card = Bonprix(web_site_id, category_name, link_id)
+        web_site = WebSite_Bonprix(link, driver, category_name, card, cr_conn)
     elif web_site_id == 5:
-        card = Quelle(web_site_id, category_name, id)
-        cards_html_classes = [{'class_name': 'q-product-box', 'type': 'li'}]
-        next_page_html = 'pagination-next'
-
+        card = Quelle(web_site_id, category_name, link_id)
+        web_site = WebSite_Quelle(link, driver, category_name, card, cr_conn)
     # get data
-    web_site = WebSite(link, driver, web_site_id, category_name, card, cards_html_classes, next_page_html, cr_conn)
     # web_site.make_test()
     web_site.get_all_cards()
     web_site.save_cards()
-    main_c.execute('UPDATE links SET isChecked=2 WHERE id={}'.format(id))
+    main_c.execute('UPDATE links SET isChecked=2 WHERE id={}'.format(link_id))
 driver.close()
 print('Creating a pivot table')
 cr_c.execute("CREATE TABLE `pivot` ( `webSiteID` INTEGER, `categoryName` TEXT, `cntItems` INTEGER )")

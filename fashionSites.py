@@ -7,151 +7,7 @@ import serviceFunctions as sf
 import sqlite3 as sql
 
 
-class WebSite:
-    visited_links = []
-    driver = None
-    Card = None
-    site_id = -1
-    cat = ''
-    cards_html_classes = []
-    next_page_xpath = ''
 
-    def __init__(self, url, driver, site_id, cat, card, cards_html_classes, next_page_class, cr_conn):
-        self.driver = driver
-        self.driver.maximize_window()
-        self.driver.get(url)
-        self.site_id = site_id
-        self.cat = cat
-        self.Card = card
-        self.cards_html_classes = cards_html_classes
-        self.next_page_class = next_page_class
-        self.cr_conn = cr_conn
-        self.cards = []
-
-    def get_all_cards(self):
-        """
-        reads all cards from self.url
-        :return: cards from all pages starting from self.url
-        """
-        self.get_cards_single()
-        while self.load_next_page():
-            self.get_cards_single()
-
-    def get_cards_single(self):
-        """
-        :return: cards from a single web page loaded in self.driver
-        """
-
-        # get cards from the page
-        items = None
-        page = self.driver.execute_script('return document.body.innerHTML')
-        soup = BeautifulSoup(''.join(page), 'html.parser')
-        for data_set in self.cards_html_classes:
-            items = soup.find_all(data_set['type'], data_set['class_name'])
-            if items: break
-        if not items:
-            print('Unable to find cards on {}'.format(self.driver.current_url))
-        else:
-            for item in items:
-                self.cards.append(self.Card.get_data(item, self.driver.current_url))
-
-    def load_next_page(self):
-        time.sleep(1)
-        txt = self.driver.execute_script('return document.body.innerHTML')
-        page = html.document_fromstring(txt)
-        el = page.find_class(self.next_page_class)
-
-        if not el:
-            print('No next page 1: {}'.format(self.driver.current_url))
-            return 0
-        xpath = self._get_xpath(el[0])
-
-        MAX_CLICK_ATTEMPTS = 3
-        time.sleep(2)
-        self.visited_links.append(self.driver.current_url)
-        arrow = None
-        cnt_attempts = 0
-        while 1:
-            try:
-                arrow = self.driver.find_element_by_xpath(xpath)
-            except: pass
-
-            if not arrow:
-                if len(self.visited_links) == 0:
-                    raise ValueError('Unable to find pagination arrow at {}'.format(self.driver.current_url))
-                else:
-                    print('No next page 2: {}'.format(self.driver.current_url))
-                    return 0
-            cnt_attempts += 1
-            try:
-                x = arrow.location_once_scrolled_into_view
-                try:
-                    self.driver.execute_script("window.scrollBy(0,50)")
-                except: pass
-                time.sleep(1)
-                arrow.click()
-                if self.driver.current_url not in self.visited_links:
-                    return 1
-            except:
-                if self.driver.current_url not in self.visited_links:
-                    return 1 # kupivip: the page uploaded when reaching the end of the page
-                self.driver.get(self.driver.current_url)
-                print('Attempt {}: {}'.format(cnt_attempts,self.driver.current_url))
-            if cnt_attempts > MAX_CLICK_ATTEMPTS: break
-        print('No next page 3: {}'.format(self.driver.current_url))
-        return 0
-
-    def save_cards(self):
-        if len(self.cards) > 0:
-            # save data
-            for card in self.cards:
-                cmd = sf.get_insert_command(card, 'prodData')
-                sf.execute_query(self.cr_conn, cmd, 3)
-            self.cr_conn.commit()
-
-    def make_test(self):
-        FIELDS_CNT = 8  # max fields' number in the card
-        self.get_cards_single()
-        len_sum = 0
-        if self.cards:
-            for c in self.cards:
-                len_sum += len(c)
-            print('Mid fullness for {} is {}%'.format(self.site_id, round((len_sum / len(self.cards) / FIELDS_CNT) * 100), 1))
-        else:
-            print('No cards for {}'.format(self.site_id))
-        print('Loading next page...')
-        if self.load_next_page(): print('Success')
-
-    def _get_xpath(self, el):
-        """
-        :param el: lxml node
-        :return: xpath for el
-        """
-        xpath_arr = []
-        parent = el.getparent()
-        while parent is not None:
-            cnt_children = 0 # count of children with the same name
-            el_num = 1 # element's number among the same children
-            suffix = ''
-            # find element's number among the same children
-            for child in parent.getchildren():
-                if hasattr(child, 'tag') and child.tag == el.tag:
-                    cnt_children += 1
-                if child is el:
-                    el_num = cnt_children
-                    if cnt_children > 1: break
-
-            if cnt_children > 1:
-                suffix = '[{}]'.format(str(el_num))
-            xpath_arr.append(el.tag + suffix)
-
-            # level up
-            el = el.getparent()
-            parent = el.getparent()
-
-        xpath_arr.append('html')
-        xpath_arr.reverse()
-        return '/'.join(xpath_arr)
 
 
 class Card:
@@ -399,3 +255,173 @@ class Quelle(Card):
         data_dict['categoryName'] = self.categoryName
         data_dict['categoryNameID'] = self.categoryNameId
         return data_dict
+
+class WebSite:
+    visited_links = []
+    driver = None
+    Card = None
+    site_id = -1
+    cat = ''
+    cards_html_classes = []
+    next_page_class = ''
+    next_page_xpath = ''
+
+    def __init__(self, url, driver, cat, card, cr_conn):
+        self.driver = driver
+        self.driver.maximize_window()
+        self.driver.get(url)
+        self.cat = cat
+        self.Card = card
+        self.cr_conn = cr_conn
+        self.cards = []
+
+    def get_all_cards(self):
+        """
+        reads all cards from self.url
+        :return: cards from all pages starting from self.url
+        """
+        self.get_cards_single()
+        while self.load_next_page():
+            self.get_cards_single()
+
+    def get_cards_single(self):
+        """
+        :return: cards from a single web page loaded in self.driver
+        """
+
+        # get cards from the page
+        items = None
+        page = self.driver.execute_script('return document.body.innerHTML')
+        soup = BeautifulSoup(''.join(page), 'html.parser')
+        for data_set in self.cards_html_classes:
+            items = soup.find_all(data_set['type'], data_set['class_name'])
+            if items: break
+        if not items:
+            print('Unable to find cards on {}'.format(self.driver.current_url))
+        else:
+            for item in items:
+                self.cards.append(self.Card.get_data(item, self.driver.current_url))
+
+    def load_next_page(self):
+        time.sleep(1)
+        txt = self.driver.execute_script('return document.body.innerHTML')
+        page = html.document_fromstring(txt)
+        el = page.find_class(self.next_page_class)
+
+        if not el:
+            print('No next page 1: {}'.format(self.driver.current_url))
+            return 0
+        xpath = self._get_xpath(el[0])
+
+        MAX_CLICK_ATTEMPTS = 3
+        time.sleep(2)
+        self.visited_links.append(self.driver.current_url)
+        arrow = None
+        cnt_attempts = 0
+        while 1:
+            try:
+                arrow = self.driver.find_element_by_xpath(xpath)
+            except: pass
+
+            if not arrow:
+                if len(self.visited_links) == 0:
+                    raise ValueError('Unable to find pagination arrow at {}'.format(self.driver.current_url))
+                else:
+                    print('No next page 2: {}'.format(self.driver.current_url))
+                    return 0
+            cnt_attempts += 1
+            try:
+                x = arrow.location_once_scrolled_into_view
+                try:
+                    self.driver.execute_script("window.scrollBy(0,50)")
+                except: pass
+                time.sleep(1)
+                arrow.click()
+                if self.driver.current_url not in self.visited_links:
+                    return 1
+            except:
+                if self.driver.current_url not in self.visited_links:
+                    return 1 # kupivip: the page uploaded when reaching the end of the page
+                self.driver.get(self.driver.current_url)
+                print('Attempt {}: {}'.format(cnt_attempts,self.driver.current_url))
+            if cnt_attempts > MAX_CLICK_ATTEMPTS: break
+        print('No next page 3: {}'.format(self.driver.current_url))
+        return 0
+
+    def save_cards(self):
+        if len(self.cards) > 0:
+            # save data
+            for card in self.cards:
+                cmd = sf.get_insert_command(card, 'prodData')
+                sf.execute_query(self.cr_conn, cmd, 3)
+            self.cr_conn.commit()
+
+    def make_test(self):
+        FIELDS_CNT = 8  # max fields' number in the card
+        self.get_cards_single()
+        len_sum = 0
+        if self.cards:
+            for c in self.cards:
+                len_sum += len(c)
+            print('Mid fullness for {} is {}%'.format(self.site_id, round((len_sum / len(self.cards) / FIELDS_CNT) * 100), 1))
+        else:
+            print('No cards for {}'.format(self.site_id))
+        print('Loading next page...')
+        if self.load_next_page(): print('Success')
+
+    def _get_xpath(self, el):
+        """
+        :param el: lxml node
+        :return: xpath for el
+        """
+        xpath_arr = []
+        parent = el.getparent()
+        while parent is not None:
+            cnt_children = 0 # count of children with the same name
+            el_num = 1 # element's number among the same children
+            suffix = ''
+            # find element's number among the same children
+            for child in parent.getchildren():
+                if hasattr(child, 'tag') and child.tag == el.tag:
+                    cnt_children += 1
+                if child is el:
+                    el_num = cnt_children
+                    if cnt_children > 1: break
+
+            if cnt_children > 1:
+                suffix = '[{}]'.format(str(el_num))
+            xpath_arr.append(el.tag + suffix)
+
+            # level up
+            el = el.getparent()
+            parent = el.getparent()
+
+        xpath_arr.append('html')
+        xpath_arr.reverse()
+        return '/'.join(xpath_arr)
+
+class WebSite_Wildberries(WebSite):
+    site_id = 1
+    cards_html_classes = [{'class_name': 'dtList', 'type': 'div'}]
+    next_page_html = 'next'
+
+class WebSite_Lamoda(WebSite):
+    site_id = 2
+    cards_html_classes = [{'class_name': 'products-list-item', 'type': 'div'}]
+    next_page_html = 'paginator__next'
+
+class WebSite_Kupivip(WebSite):
+    site_id = 3
+    cards_html_classes = [{'class_name': 'product-item', 'type': 'div'}]
+    next_page_html = 'icon-arrow right'
+
+class WebSite_Bonprix(WebSite):
+    site_id = 4
+    cards_html_classes = [{'class_name': 'product-list-item ', 'type': 'div'}]
+    next_page_html = 'next'
+
+
+class WebSite_Quelle(WebSite):
+    site_id = 5
+    cards_html_classes = [{'class_name': 'q-product-box', 'type': 'li'}]
+    next_page_class = 'pagination-next'
