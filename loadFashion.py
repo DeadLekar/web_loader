@@ -9,7 +9,7 @@ main_c = main_conn.cursor()
 cr_c = cr_conn.cursor()
 
 # main_c.execute('UPDATE links SET isChecked=0')
-rows = main_c.execute('SELECT id,link,webSiteId,categoryName FROM links WHERE websiteid=5')
+rows = main_c.execute('SELECT id,link,webSiteId,categoryName FROM links WHERE isChecked=0')
 driver = webdriver.Chrome(driverPath)
 for row in rows.fetchall():
     link_id = row[0]
@@ -41,6 +41,7 @@ for row in rows.fetchall():
     web_site.get_all_cards()
     web_site.save_cards()
     main_c.execute('UPDATE links SET isChecked=2 WHERE id={}'.format(link_id))
+    main_conn.commit()
 driver.close()
 print('Creating a pivot table')
 cr_c.execute("CREATE TABLE `pivot` ( `webSiteID` INTEGER, `categoryName` TEXT, `cntItems` INTEGER )")

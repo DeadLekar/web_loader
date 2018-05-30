@@ -1,4 +1,4 @@
-compName = "work"
+compName = "notebook"
 driverPath = ""
 mainDbasePath = crDbasePath = ""
 if compName == "work":
