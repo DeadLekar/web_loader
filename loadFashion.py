@@ -9,35 +9,26 @@ main_c = main_conn.cursor()
 cr_c = cr_conn.cursor()
 
 # main_c.execute('UPDATE links SET isChecked=0')
-rows = main_c.execute('SELECT id,link,webSiteId,categoryName FROM links WHERE isChecked=0')
+rows = main_c.execute('SELECT id,link,webSiteId,categoryName FROM links')
 driver = webdriver.Chrome(driverPath)
 for row in rows.fetchall():
     link_id = row[0]
     link = row[1]
     web_site_id = row[2]
     category_name = row[3]
-    card = None
-    cards_html_classes = []
-    next_page_xpath = ''
-    next_page_html = ''
-    next_page_text = ''
+    web_site = None
     if web_site_id == 1:
-        card = Wildberries(web_site_id, category_name, link_id)
-        web_site = WebSite_Wildberries(link, driver, category_name, card, cr_conn)
+        web_site = WebSite_Wildberries(link,  driver, category_name, link_id, cr_conn)
     elif web_site_id == 2:
-        card = Lamoda(web_site_id, category_name, link_id)
-        web_site = WebSite_Lamoda(link, driver, category_name, card, cr_conn)
+        web_site = WebSite_Lamoda(link,  driver, category_name, link_id, cr_conn)
     elif web_site_id == 3:
-        card = Kupivip(web_site_id, category_name, link_id)
-        web_site = WebSite_Kupivip(link, driver, category_name, card, cr_conn)
+        web_site = WebSite_Kupivip(link,  driver, category_name, link_id, cr_conn)
     elif web_site_id == 4:
-        card = Bonprix(web_site_id, category_name, link_id)
-        web_site = WebSite_Bonprix(link, driver, category_name, card, cr_conn)
+        web_site = WebSite_Bonprix(link,  driver, category_name, link_id, cr_conn)
     elif web_site_id == 5:
-        card = Quelle(web_site_id, category_name, link_id)
-        web_site = WebSite_Quelle(link, driver, category_name, card, cr_conn)
+        web_site = WebSite_Quelle(link,  driver, category_name, link_id, cr_conn)
     # get data
-    # web_site.make_test()
+    web_site.make_test()
     web_site.get_all_cards()
     web_site.save_cards()
     main_c.execute('UPDATE links SET isChecked=2 WHERE id={}'.format(link_id))
