@@ -19,8 +19,17 @@ class Sravni:
 
     def load_pages(self):
         self.driver.get(self.start_link)
-
+        article_cards = []
+        while len(article_cards) < 30:
+            article_cards = self.driver.find_elements_by_class_name('article-preview')
+            self.load_more()
         pass
+
+    def load_more(self):
+        btn = self.driver.find_element_by_class_name('anchor-block-text')
+        btn.click()
+
+
 
 
 
