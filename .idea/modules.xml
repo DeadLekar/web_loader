@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/../kinoman/.idea/kinoman.iml" filepath="$PROJECT_DIR$/../kinoman/.idea/kinoman.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/web_loader.iml" filepath="$PROJECT_DIR$/.idea/web_loader.iml" />
     </modules>
   </component>

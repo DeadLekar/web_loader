@@ -1,4 +1,4 @@
-from fashionSites import *
+from webSites import *
 import sqlite3 as sql
 from paths import *
 
