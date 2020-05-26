@@ -178,15 +178,20 @@ class Banki:
 
     def _split_news_lines(self, key, val):
         news_arr = val.split('<li>')
+        ret_arr = []
         for news_item in news_arr:
-            time_publ = news_item[34:40]
-            link_start = news_item.find('href=')+6
-            link_end = news_item.find('"', link_start)
-            link = news_item[link_start:link_end]
-            title_start = news_item.find('<span>', link_end) + 6
-            title_end = news_item.find('</span>', title_start)
-            title = news_item[title_start:title_end]
-
+            if 'href' in news_item:
+                time_publ_start = news_item.find('date') + 6
+                time_publ_end = news_item.find('</span', time_publ_start)
+                time_publ = news_item[time_publ_start:time_publ_end]
+                link_start = news_item.find('href=')+6
+                link_end = news_item.find('"', link_start)
+                link = 'https://www.banki.ru' + news_item[link_start:link_end]
+                title_start = news_item.find('<span>', link_end) + 6
+                title_end = news_item.find('</span>', title_start)
+                title = str.strip(news_item[title_start:title_end])
+                print('{};{};{};{};'.format(key, time_publ, link, title))
+        return ret_arr
 
     def read_news_lines(self, stop_data):
         url = self.start_link
@@ -201,25 +206,22 @@ class Banki:
             url = self._get_next_page_news(url, cnt_pages)
 
 
+if __name__ == '__main__':
+    db_name = get_right_path(db_paths) + 'finsites.db'
+    conn = sql.connect(db_name)
 
+    chrome_path = get_right_path(driver_paths)
+    # driver = webdriver.Chrome(chrome_path)
 
-
-
-db_name = get_right_path(db_paths) + 'finsites.db'
-conn = sql.connect(db_name)
-
-chrome_path = get_right_path(driver_paths)
-# driver = webdriver.Chrome(chrome_path)
-
-# sravni = Sravni(driver, 500, conn)
-# sravni.get_links()
-# sravni.read_articles_data()
-# banki = Banki('https://www.banki.ru/news/daytheme/?page=1', driver, conn)
-# banki.get_links(35)
-# banki = Banki('https://www.banki.ru/news/columnists/?page=1', driver, conn)
-# banki.get_links(25)
-# banki = Banki(_driver=driver)
-# banki.read_articles_data()
-banki = Banki(_start_link='https://www.banki.ru/news/lenta/page1/')
-banki.read_news_lines('04.2020')
+    # sravni = Sravni(driver, 500, conn)
+    # sravni.get_links()
+    # sravni.read_articles_data()
+    # banki = Banki('https://www.banki.ru/news/daytheme/?page=1', driver, conn)
+    # banki.get_links(35)
+    # banki = Banki('https://www.banki.ru/news/columnists/?page=1', driver, conn)
+    # banki.get_links(25)
+    # banki = Banki(_driver=driver)
+    # banki.read_articles_data()
+    banki = Banki(_start_link='https://www.banki.ru/news/lenta/page1/')
+    banki.read_news_lines('04.2020')
 
